@@ -10,4 +10,7 @@
                  [org.projectreactor/reactor-core "1.1.4.RELEASE"] ]
   :repositories { "sonatype" {:url "http://oss.sonatype.org/content/repositories/releases"
                              :snapshots false
-                             :releases  {:checksum :fail}}})
+                             :releases  {:checksum :fail}}}
+  :profiles  {:dev  {:dependencies  [[speclj "3.1.0"]]}}
+  :plugins  [[speclj "3.1.0"]]
+  :test-paths  ["spec"])
