@@ -1,6 +1,5 @@
-(ns condensator.core)
+(ns condensator.core
+  (:require [clojurewerkz.meltdown.reactor :as mr]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn create []
+  (mr/create))
