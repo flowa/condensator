@@ -13,4 +13,4 @@
                              :releases  {:checksum :fail}}}
   :profiles  {:dev  {:dependencies  [[speclj "3.1.0"]]}}
   :plugins  [[speclj "3.1.0"]]
-  :test-paths  ["spec"])
+  :test-paths  ["test"])

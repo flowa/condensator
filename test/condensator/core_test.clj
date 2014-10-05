@@ -1,7 +1,8 @@
 (ns condensator.core-test
-  (:require [clojure.test :refer :all]
-            [condensator.core :refer :all]))
+  (:use [speclj.core]
+        [condensator.core]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(describe "FIXME, I fail"
+          (it "I fail" (should false)))
+
+(run-specs)
