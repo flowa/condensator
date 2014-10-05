@@ -7,4 +7,7 @@
                  [clojurewerkz/meltdown "1.0.0"]
                  [com.taoensso/timbre "3.2.1"]
                  [org.projectreactor/reactor-net "1.1.4.RELEASE"] 
-                 [org.projectreactor/reactor-core "1.1.4.RELEASE"] ])
+                 [org.projectreactor/reactor-core "1.1.4.RELEASE"] ]
+  :repositories { "sonatype" {:url "http://oss.sonatype.org/content/repositories/releases"
+                             :snapshots false
+                             :releases  {:checksum :fail}}})
