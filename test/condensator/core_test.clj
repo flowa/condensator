@@ -1,8 +1,9 @@
 (ns condensator.core-test
-  (:use [speclj.core]
-        [condensator.core]))
+  (:use [speclj.core])
+  (:require [condensator.core :as condensator]))
 
-(describe "FIXME, I fail"
-          (it "I fail" (should false)))
+(describe "Create tests"
+          (it "Creates instance of Reactorish object" 
+              (should= (type (condensator/create)) reactor.core.Reactor)))
 
 (run-specs)
