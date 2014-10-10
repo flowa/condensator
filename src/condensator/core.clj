@@ -8,9 +8,10 @@
   (mr/create))
 
 (defn notify [condensator selector payload]
-  "Notifies condensator with payload based on selector")
+  "Notifies condensator with payload based on selector"
+  (mr/notify condensator selector payload))
 
-(defn on [condensator selector fn]
+(defn on [condensator selector cb]
   "Attaches listener to condensator"
-  (mr/on condensator ($ selector ) fn))
+  (mr/on condensator ($ selector ) cb))
 

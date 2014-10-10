@@ -17,12 +17,19 @@
 (defn get-registry-entry-by-selector [registry selector]
     (filter #(= (.getObject (.getSelector %)) selector) registry))
 
-(describe "On tests"
+(describe "On and notify tests"
+          (with c (condensator/create))
+
           (it "Attaches listener to Reactorish object"
-              (let [c (condensator/create)]
-                (condensator/on c "fookey" (fn [] ""))
-                (let [registry (get-registry-from-reactor c)]
+                (condensator/on @c "fookey" (fn [a] ""))
+                (let [registry (get-registry-from-reactor @c)]
                   ;Counts 2 because first one is always Reactor instance
                   (should= 2 (count registry))
-                  (should= 1 (count (get-registry-entry-by-selector registry "fookey")))))))
+                  (should= 1 (count (get-registry-entry-by-selector registry "fookey")))))
 
+          (it "Notifies listener and listener acts"
+              (let [a (promise)]
+                (condensator/on @c "foo" (fn [foo] 
+                                           (deliver a 2)))
+                (condensator/notify @c "foo" 2)
+                (should= 2 @a))))
