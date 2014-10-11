@@ -20,15 +20,18 @@
 (defn get-registry-entry-by-selector [registry selector]
     (filter #(= (.getObject (.getSelector %)) selector) registry))
 
+(defn assert-registry-listeners [reactor]
+  (let [registry (get-registry-from-reactor reactor)]
+    (should= 2 (count registry))
+    (should= 1 (count (get-registry-entry-by-selector registry "fookey"))))
+  ())
+
 (describe "On and notify tests without tcp"
           (with c (condensator/create))
 
           (it "Attaches listener to Reactorish object"
-                (condensator/on @c "fookey" (fn [a] ""))
-                (let [registry (get-registry-from-reactor @c)]
-                  ;Counts 2 because first one is always Reactor instance
-                  (should= 2 (count registry))
-                  (should= 1 (count (get-registry-entry-by-selector registry "fookey")))))
+              (condensator/on @c "fookey" (fn [a] ""))
+              (assert-registry-listeners @c))
 
           (it "Notifies listener and listener acts"
               (let [a (promise)]
@@ -39,6 +42,8 @@
 
 (describe "On and notify tests with TCP"
           (with ctcp (condensator/create "localhost" 8080))
-          
+
           (it "Attaches listener to TCP capable Reactorish object"
-              (condensator/on @ctcp "fookey" (fn [a] ""))))
+              (condensator/on @ctcp "fookey" (fn [a] "")
+                              )
+              (assert-registry-listeners (:condensator @ctcp))))
