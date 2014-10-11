@@ -4,6 +4,7 @@
             [condensator.tcp.tcp :as tcp]))
 
 (defn create
+  "Creates condensator based on meltdown or tcp capable condensator"
   ([address port] 
    (tcp/create-server :address address :port port :reactor (create)))
   ([] (mr/create)))
