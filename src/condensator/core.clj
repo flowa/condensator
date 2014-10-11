@@ -5,15 +5,9 @@
             [condensator.tcp.tcp :as tcp]))
 
 (defn- tcp? [condensator] 
-  (if (= reactor.net.netty.tcp.NettyTcpServer (type condensator))
+  (if (= condensator.tcp.tcp.TCPCondensator (type condensator))
     true
     false))
-
-(defn- get-reactor-from-tcp-condensator [condensator]
-  (.getReactor condensator))
-
-(defn- on-tcp [condensator selector cb]
-  (mr/on (get-reactor-from-tcp-condensator condensator) selector cb))
 
 (defn create
   "Creates condensator based on meltdown or tcp capable condensator"
@@ -29,6 +23,6 @@
 (defn on [condensator selector cb]
   "Attaches listener to condensator"
   (if (tcp? condensator)
-    (on-tcp condensator selector cb)
+    (mr/on (:condensator condensator) ($ selector) cb)
     (mr/on condensator ($ selector ) cb)))
 

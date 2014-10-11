@@ -7,6 +7,8 @@
            [reactor.net.netty.tcp NettyTcpServer]
            [reactor.io.encoding StandardCodecs]))
 
+(defrecord TCPCondensator [condensator server])
+
 (defn create-server [& {:keys [^String address
                                 ^Integer port
                                 reactor
@@ -17,9 +19,10 @@
         options (ServerSocketOptions.)
         codec  (StandardCodecs/LINE_FEED_CODEC)
         server (proxy [TcpServerSpec] [NettyTcpServer]
-                 (getReactor_ []
+                 (getReactor []
                    (.getReactor this)
-                   (proxy-super getReactor)))]
+                   (proxy-super getReactor)))
+        server-instance
     (-> server
         (doto
           (.options options)
@@ -27,4 +30,5 @@
           (.configure reactor env)
           (.codec codec)
           (.listen address port))
-        (.get))))
+        (.get))]
+    (TCPCondensator. reactor server-instance)))
