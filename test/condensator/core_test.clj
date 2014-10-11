@@ -20,7 +20,7 @@
 (defn get-registry-entry-by-selector [registry selector]
     (filter #(= (.getObject (.getSelector %)) selector) registry))
 
-(describe "On and notify tests"
+(describe "On and notify tests without tcp"
           (with c (condensator/create))
 
           (it "Attaches listener to Reactorish object"
@@ -36,3 +36,9 @@
                                            (deliver a (:data foo))))
                 (condensator/notify @c "foo" 2)
                 (should= 2 @a))))
+
+(describe "On and notify tests with TCP"
+          (with ctcp (condensator/create "localhost" 8080))
+          
+          (it "Attaches listener to TCP capable Reactorish object"
+              (condensator/on @ctcp "fookey" (fn [a] ""))))

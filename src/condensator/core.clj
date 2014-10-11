@@ -1,7 +1,17 @@
 (ns condensator.core
   (:require [clojurewerkz.meltdown.reactor :as mr]
             [clojurewerkz.meltdown.selectors :refer  [$]]
+            [ clojurewerkz.meltdown.consumers :as consumers]
             [condensator.tcp.tcp :as tcp]))
+
+(defn- tcp? [condensator] 
+  (if (= reactor.net.netty.tcp.NettyTcpServer (type condensator))
+    true
+    false))
+
+
+(defn- on-tcp [condensator selector cb]
+  (.consume condensator (consumers/from-fn cb)))
 
 (defn create
   "Creates condensator based on meltdown or tcp capable condensator"
@@ -16,5 +26,7 @@
 
 (defn on [condensator selector cb]
   "Attaches listener to condensator"
-  (mr/on condensator ($ selector ) cb))
+  (if (tcp? condensator)
+    (on-tcp condensator selector cb)
+    (mr/on condensator ($ selector ) cb)))
 
