@@ -30,6 +30,6 @@
           (it "Notifies listener and listener acts"
               (let [a (promise)]
                 (condensator/on @c "foo" (fn [foo] 
-                                           (deliver a 2)))
+                                           (deliver a (:data foo))))
                 (condensator/notify @c "foo" 2)
                 (should= 2 @a))))
