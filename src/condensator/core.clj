@@ -1,11 +1,13 @@
 (ns condensator.core
   (:require [clojurewerkz.meltdown.reactor :as mr]
-            [clojurewerkz.meltdown.selectors :refer  [$]]))
+            [clojurewerkz.meltdown.selectors :refer  [$]]
+            [condensator.tcp.tcp :as tcp]))
 
-(defn create []
-  "Creates the container object for consumers. In the future
-  also the networking functionality is in the returned object"
-  (mr/create))
+(defn create
+  ([address port] 
+   (tcp/create-server :address address :port port :reactor (create)))
+  ([] (mr/create)))
+
 
 (defn notify [condensator selector payload]
   "Notifies condensator with payload based on selector"

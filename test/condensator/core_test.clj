@@ -9,7 +9,10 @@
 
 (describe "Create tests"
           (it "Creates instance of Reactorish object" 
-              (should= (type (condensator/create)) reactor.core.Reactor)))
+              (should= (type (condensator/create)) reactor.core.Reactor))
+          
+          (it "Create TCP capable object when {:address :port} is given"
+              (should= reactor.net.netty.tcp.NettyTcpServer (type (condensator/create "localhost" 8080)))))
 
 (defn get-registry-from-reactor [r] 
   (seq (.getConsumerRegistry r)))
