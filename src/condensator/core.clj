@@ -9,9 +9,11 @@
     true
     false))
 
+(defn- get-reactor-from-tcp-condensator [condensator]
+  (.getReactor condensator))
 
 (defn- on-tcp [condensator selector cb]
-  (.consume condensator (consumers/from-fn cb)))
+  (mr/on (get-reactor-from-tcp-condensator condensator) selector cb))
 
 (defn create
   "Creates condensator based on meltdown or tcp capable condensator"
