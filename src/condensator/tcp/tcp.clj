@@ -18,10 +18,7 @@
         env (environment/create)
         options (ServerSocketOptions.)
         codec  (StandardCodecs/LINE_FEED_CODEC)
-        server (proxy [TcpServerSpec] [NettyTcpServer]
-                 (getReactor []
-                   (.getReactor this)
-                   (proxy-super getReactor)))
+        server (proxy [TcpServerSpec] [NettyTcpServer])
         server-instance
     (-> server
         (doto
