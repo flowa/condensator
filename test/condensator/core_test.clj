@@ -58,15 +58,15 @@
 
 (describe "Remote On and notify tests with TCP"
           (with ctcp (condensator/create "localhost" 3030))
-          (with datapromise (promise))
           (before-all 
-            (.await (.start (:server @ctcp)))
-            (condensator/on @ctcp "remote" (fn [data] 
-                                             (info data)
-                                             (deliver @datapromise "foo"))))
+            (.await (.start (:server @ctcp))))
           (after-all (.shutdown (:server @ctcp)))
 
           (it "remote notifies and locally executes listener"
+              (let [datapromise (promise)]
+              (condensator/on @ctcp "remote" (fn [data] 
+                                             (deliver datapromise (:data data))))
               (tcp/notify-tcp-msg :port 3030 :key "remote" :data "from-remote")
-              (should= "from-remote" (deref @datapromise 3000 nil))))
+              (info datapromise)
+              (should= "from-remote" @datapromise))))
 
