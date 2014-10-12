@@ -28,7 +28,7 @@
   ())
 
 (describe "On and notify tests without tcp"
-          (with c (condensator/create))
+          (with! c (condensator/create))
 
           (it "Attaches listener to Reactorish object"
               (condensator/on @c "fookey" (fn [a] ""))
@@ -42,7 +42,7 @@
                 (should= 2 @a))))
 
 (describe "Local On and notify tests with TCP"
-          (with ctcp (condensator/create "localhost" 8080))
+          (with! ctcp (condensator/create "localhost" 8080))
 
           (it "Attaches listener to TCP capable Reactorish object"
               (condensator/on @ctcp "fookey" (fn [a] "")
@@ -57,17 +57,19 @@
           (should= 2 @a))))
 
 (describe "Remote On and notify tests with TCP"
-          (with ctcp (condensator/create "localhost" 3030))
+          (def ctcp (condensator/create "localhost" 3030))
           (before-all 
-            (.await (.start (:server @ctcp))))
+            (.await (.start (:server ctcp))))
           (after-all 
-            (.await (.shutdown (:server @ctcp))))
+            (.await (.shutdown (:server ctcp))))
 
           (it "remote notifies and locally executes listener"
               (let [datapromise (promise)]
-              (condensator/on @ctcp "remote" (fn [data] 
-                                             (deliver datapromise (:data data))))
-              (tcp/notify-tcp-msg :port 3030 :key "remote" :data "from-remote")
-              (let [result  (deref datapromise 3000 nil)]
-              (should= "from-remote" result)))))
+                (condensator/on ctcp "remote" (fn [data] 
+                                                 (info datapromise)
+                                                 (deliver datapromise (:data data))))
+                (tcp/notify-tcp-msg :port 3030 :key "remote" :data "from-remote")
+                (let [result  (deref datapromise 3000 nil)]
+                  (should= "from-remote" result)
+                  ))))
 

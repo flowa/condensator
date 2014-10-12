@@ -29,7 +29,6 @@
         server (proxy [TcpServerSpec] [NettyTcpServer])
         str-consumer (from-fn-raw (fn [line]
                                     (let [data (read-string line)]
-                                      (info (:key data))
                                       (mr/notify reactor (:key data) (:data data)))))
         tcp-consumer (from-fn-raw (fn [conn]
                                     (-> conn
