@@ -73,16 +73,17 @@
                 (let [result  (deref datapromise 3000 nil)]
                   (should= "from-remote" result))))
 
-          ;; (it "remote attaches an on listener to reactor when operation is :on"
-          ;;     (let [datapromise (promise)]
-          ;;       (condensator/on local "remote" (fn [data]
-          ;;                                           (info "datapromise" datapromise)
-          ;;                                           (deliver datapromise (:data data)))
-          ;;                                         {:address "localhost" :port 3030})
+          (it "remote attaches an on listener to reactor when operation is :on"
+              (let [datapromise (promise)]
+                (condensator/on local "remote" (fn [data]
+                                                    (info "datapromise" datapromise)
+                                                    (deliver datapromise (:data data)))
+                                                  {:address "localhost" :port 3030})
 
-          ;;       (condensator/notify server "remote" "from-remote")
-          ;;       (let [result  (deref datapromise 3000 nil)]
-          ;;         (should= "from-remote" result))))
+                (Thread/sleep 1000)
+                (condensator/notify server "remote" "from-remote")
+                (let [result  (deref datapromise 3000 nil)]
+                  (should= "from-remote" result))))
           )
 
 (describe "With invalid input args"

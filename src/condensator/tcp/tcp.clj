@@ -37,6 +37,7 @@
         ;;                               (mr/notify reactor key data))))
         tcp-consumer (from-fn-raw (fn [conn]
                                     (let [on-handler (fn [{:keys [data] :as event}]
+                                                       (info "SERVER on handler fired. Data:"data)
                                                        (.send conn (str {:data data})))
                                           str-consumer (from-fn-raw
                                                         (fn [line]
@@ -45,7 +46,9 @@
                                                             (info "selector:"selector "data:"data "operation:"operation)
                                                             (cond
                                                               (= operation :notify) (mr/notify reactor selector data)
-                                                              (= operation :on) (mr/on reactor selector data))
+                                                              (= operation :on) (do (info "SERVER: registering on handler")
+                                                                                    (mr/on reactor selector data on-handler)
+                                                                                    ))
 
                                                             )))]
                                       (-> conn
@@ -89,8 +92,13 @@
          port (or port 3333)
          host (or host "localhost")
          clientSpec (proxy [TcpClientSpec] [NettyTcpClient])
+         str-consumer (from-fn-raw (fn [line]
+                                     (info "CLIENT: incoming line: " line)))
          tcp-consumer (from-fn-raw (fn [conn]
-                                     (.send conn (str {:selector selector :data data :operation operation}))))
+                                     (.send conn (str {:selector selector :data data :operation operation}))
+                                     (-> conn
+                                            (.in)
+                                            (.consume str-consumer))))
          client (-> clientSpec
                     (doto
                       (.env e)
@@ -99,3 +107,11 @@
                       (.connect host port))
                     (.get))]
      (.consume (.open client) tcp-consumer))))
+
+            ;; str-consumer (from-fn-raw (fn [line]
+            ;;                             (info "CLIENT: incoming line: " line)))
+            ;; tcp-consumer (from-fn-raw (fn [conn]
+            ;;                             (.send conn "PING!")
+            ;;                             (-> conn
+            ;;                                 (.in)
+            ;;                                 (.consume str-consumer))))
