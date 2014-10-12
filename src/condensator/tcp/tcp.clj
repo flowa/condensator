@@ -28,8 +28,13 @@
         codec  (StandardCodecs/LINE_FEED_CODEC)
         server (proxy [TcpServerSpec] [NettyTcpServer])
         str-consumer (from-fn-raw (fn [line]
-                                    (let [data (read-string line)]
-                                      (mr/notify reactor (:key data) (:data data)))))
+                                    (info "SERVER str-consumer")
+                                    (let [{:keys [key data operation]} (read-string line)]
+                                      (info "key:"key "data:"data "operation:"operation)
+                                      ;; (cond
+                                      ;;   (= operation :on)
+                                      ;;       :)
+                                      (mr/notify reactor key data))))
         tcp-consumer (from-fn-raw (fn [conn]
                                     (-> conn
                                         (.in)
@@ -46,15 +51,34 @@
             (.get))]
     (TCPCondensator. reactor server-instance)))
 
-(defn notify-tcp-msg
+;; (defn notify-tcp-msg
+;;   "TEMPORARY way to test client and server functionality"
+;;   ([& {:keys [port host key data] :as args}]
+;;    (let [e (environment/create)
+;;          port (or port 3333)
+;;          host (or host "localhost")
+;;          clientSpec (proxy [TcpClientSpec] [NettyTcpClient])
+;;          tcp-consumer (from-fn-raw (fn [conn]
+;;                                      (.send conn (str {:key key :data data}))))
+;;          client (-> clientSpec
+;;                     (doto
+;;                       (.env e)
+;;                       (.options (ClientSocketOptions.))
+;;                       (.codec StandardCodecs/LINE_FEED_CODEC)
+;;                       (.connect host port))
+;;                     (.get))]
+;;      (.consume (.open client) tcp-consumer))))
+
+(defn send-tcp-msg
   "TEMPORARY way to test client and server functionality"
-  ([& {:keys [port host key data] :as args}]
+  ([& {:keys [port host key operation data] :as args}]
+   (info ">> send-tcp-msg args:" args)
    (let [e (environment/create)
          port (or port 3333)
          host (or host "localhost")
          clientSpec (proxy [TcpClientSpec] [NettyTcpClient])
          tcp-consumer (from-fn-raw (fn [conn]
-                                     (.send conn (str {:key key :data data}))))
+                                     (.send conn (str {:key key :data data :operation operation}))))
          client (-> clientSpec
                     (doto
                       (.env e)
@@ -63,4 +87,3 @@
                       (.connect host port))
                     (.get))]
      (.consume (.open client) tcp-consumer))))
-

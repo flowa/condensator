@@ -9,13 +9,13 @@
 (timbre/refer-timbre)
 
 (describe "Create tests"
-          (it "Creates instance of Reactorish object" 
+          (it "Creates instance of Reactorish object"
               (should= (type (condensator/create)) reactor.core.Reactor))
-          
+
           (it "Create TCP capable object when {:address :port} is given"
               (should= condensator.tcp.tcp.TCPCondensator (type (condensator/create "localhost" 8080)))))
 
-(defn get-registry-from-reactor [r] 
+(defn get-registry-from-reactor [r]
   (seq (.getConsumerRegistry r)))
 
 (defn get-registry-entry-by-selector [registry selector]
@@ -36,7 +36,7 @@
 
           (it "Notifies listener and listener acts"
               (let [a (promise)]
-                (condensator/on @c "foo" (fn [foo] 
+                (condensator/on @c "foo" (fn [foo]
                                            (deliver a (:data foo))))
                 (condensator/notify @c "foo" 2)
                 (should= 2 @a))))
@@ -48,28 +48,50 @@
               (condensator/on @ctcp "fookey" (fn [a] "")
                               )
               (assert-registry-listeners (:condensator @ctcp)))
-          
+
           (it "Notifies attached Reactorish object on tcp enabled condensator"
           (let [a (promise)]
-          (condensator/on @ctcp "foo" (fn [foo] 
+          (condensator/on @ctcp "foo" (fn [foo]
                                         (deliver a (:data foo))))
           (condensator/notify @ctcp "foo" 2)
           (should= 2 @a))))
 
 (describe "Remote On and notify tests with TCP"
-          (def ctcp (condensator/create "localhost" 3030))
-          (before-all 
-            (.await (.start (:server ctcp))))
-          (after-all 
-            (.await (.shutdown (:server ctcp))))
+          (def server (condensator/create "localhost" 3030))
+          (def local (condensator/create))
+          (before-all
+            (.await (.start (:server server))))
+          (after-all
+            (.await (.shutdown (:server server))))
 
           (it "remote notifies and locally executes listener"
               (let [datapromise (promise)]
-                (condensator/on ctcp "remote" (fn [data] 
+                (condensator/on server "remote" (fn [data]
                                                  (info datapromise)
                                                  (deliver datapromise (:data data))))
-                (tcp/notify-tcp-msg :port 3030 :key "remote" :data "from-remote")
+                (tcp/send-tcp-msg :port 3030, :operation :notify, :key "remote", :data "from-remote")
                 (let [result  (deref datapromise 3000 nil)]
-                  (should= "from-remote" result)
-                  ))))
+                  (should= "from-remote" result))))
 
+          ;; (it "remote attaches an on listener to reactor when operation is :on"
+          ;;     (let [datapromise (promise)]
+          ;;       (condensator/on local "remote" (fn [data]
+          ;;                                           (info "datapromise" datapromise)
+          ;;                                           (deliver datapromise (:data data)))
+          ;;                                         {:address "localhost" :port 3030})
+
+          ;;       (condensator/notify server "remote" "from-remote")
+          ;;       (let [result  (deref datapromise 3000 nil)]
+          ;;         (should= "from-remote" result))))
+          )
+
+(describe "With invalid input args"
+          (def ctcp (condensator/create "localhost" 3030))
+
+          (it "on returns nil given port but no address"
+              (let [on-result (condensator/on ctcp "foo" (fn [_]) {:address nil :port 124})]
+                (should= nil on-result)))
+
+          (it "on returns nil given address but no port"
+              (let [on-result (condensator/on ctcp "foo" (fn [_]) {:address "localhost" :port nil})]
+                (should= nil on-result))))
