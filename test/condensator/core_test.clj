@@ -69,7 +69,7 @@
                 (condensator/on server "remote" (fn [data]
                                                  (info datapromise)
                                                  (deliver datapromise (:data data))))
-                (tcp/send-tcp-msg :port 3030, :operation :notify, :key "remote", :data "from-remote")
+                (tcp/send-tcp-msg :port 3030, :operation :notify, :selector "remote", :data "from-remote")
                 (let [result  (deref datapromise 3000 nil)]
                   (should= "from-remote" result))))
 

@@ -27,18 +27,30 @@
         options (ServerSocketOptions.)
         codec  (StandardCodecs/LINE_FEED_CODEC)
         server (proxy [TcpServerSpec] [NettyTcpServer])
-        str-consumer (from-fn-raw (fn [line]
-                                    (info "SERVER str-consumer")
-                                    (let [{:keys [key data operation]} (read-string line)]
-                                      (info "key:"key "data:"data "operation:"operation)
-                                      ;; (cond
-                                      ;;   (= operation :on)
-                                      ;;       :)
-                                      (mr/notify reactor key data))))
+        ;; str-consumer (from-fn-raw (fn [line]
+        ;;                             (info "SERVER str-consumer")
+        ;;                             (let [{:keys [key data operation]} (read-string line)]
+        ;;                               (info "key:"key "data:"data "operation:"operation)
+        ;;                               ;; (cond
+        ;;                               ;;   (= operation :on)
+        ;;                               ;;       :)
+        ;;                               (mr/notify reactor key data))))
         tcp-consumer (from-fn-raw (fn [conn]
-                                    (-> conn
-                                        (.in)
-                                        (.consume str-consumer))))
+                                    (let [on-handler (fn [{:keys [data] :as event}]
+                                                       (.send conn (str {:data data})))
+                                          str-consumer (from-fn-raw
+                                                        (fn [line]
+                                                          (info "SERVER str-consumer")
+                                                          (let [{:keys [selector data operation]} (read-string line)]
+                                                            (info "selector:"selector "data:"data "operation:"operation)
+                                                            (cond
+                                                              (= operation :notify) (mr/notify reactor selector data)
+                                                              (= operation :on) (mr/on reactor selector data))
+
+                                                            )))]
+                                      (-> conn
+                                          (.in)
+                                          (.consume str-consumer)))))
         server-instance
         (-> server
             (doto
@@ -71,14 +83,14 @@
 
 (defn send-tcp-msg
   "TEMPORARY way to test client and server functionality"
-  ([& {:keys [port host key operation data] :as args}]
+  ([& {:keys [port host selector operation data] :as args}]
    (info ">> send-tcp-msg args:" args)
    (let [e (environment/create)
          port (or port 3333)
          host (or host "localhost")
          clientSpec (proxy [TcpClientSpec] [NettyTcpClient])
          tcp-consumer (from-fn-raw (fn [conn]
-                                     (.send conn (str {:key key :data data :operation operation}))))
+                                     (.send conn (str {:selector selector :data data :operation operation}))))
          client (-> clientSpec
                     (doto
                       (.env e)

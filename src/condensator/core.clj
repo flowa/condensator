@@ -37,6 +37,6 @@
      (mr/on (condensator-val condensator) ($ selector ) cb))
   ([condensator selector cb {:keys [address port]}]
      (if (and address port)
-       (do (tcp/send-tcp-msg :address address :port port :operation :on)
-           (mr/on (condensator-val condensator) ($ selector ) cb))
+       (do (tcp/send-tcp-msg :address address :port port :selector selector :operation :on)
+           (mr/on (condensator-val condensator) ($ selector) cb))
        )))
