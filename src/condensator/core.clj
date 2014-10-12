@@ -15,17 +15,14 @@
    (tcp/create-server :address address :port port :reactor (create)))
   ([] (mr/create)))
 
-
-(defn notify [condensator selector payload]
-  "Notifies condensator with payload based on selector"
-  (if (tcp? condensator)
-    (mr/notify (:condensator condensator) selector payload)
-    (mr/notify condensator selector payload)))
-
 (defn- condensator-val [condensator]
   (if (tcp? condensator)
     (:condensator condensator)
     condensator))
+
+(defn notify [condensator selector payload]
+  "Notifies condensator with payload based on selector"
+    (mr/notify (condensator-val condensator) selector payload))
 
 (defn on
   "Attaches listener to condensator"
@@ -41,11 +38,7 @@
            (mr/on (condensator-val condensator) ($ selector) cb)))))
 
 (defn receive-event [condensator selector cb]
-  (if (tcp? condensator)
-    (mr/receive-event (:condensator condensator) ($ selector) cb)
-    (mr/receive-event condensator ($ selector) cb)))
+    (mr/receive-event (condensator-val condensator) ($ selector) cb))
 
 (defn send-event [condensator selector data cb]
-  (if (tcp? condensator)
-    (mr/send-event (:condensator condensator) selector data cb)
-    (mr/send-event condensator selector data cb)))
+    (mr/send-event (condensator-val condensator) selector data cb))
