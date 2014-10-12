@@ -18,7 +18,9 @@
 
 (defn notify [condensator selector payload]
   "Notifies condensator with payload based on selector"
-  (mr/notify condensator selector payload))
+  (if (tcp? condensator)
+    (mr/notify (:condensator condensator) selector payload)
+    (mr/notify condensator selector payload)))
 
 (defn on [condensator selector cb]
   "Attaches listener to condensator"

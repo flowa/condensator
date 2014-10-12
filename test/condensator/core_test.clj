@@ -46,4 +46,11 @@
           (it "Attaches listener to TCP capable Reactorish object"
               (condensator/on @ctcp "fookey" (fn [a] "")
                               )
-              (assert-registry-listeners (:condensator @ctcp))))
+              (assert-registry-listeners (:condensator @ctcp)))
+          
+          (it "Notifies attached Reactorish object on tcp enabled condensator"
+          (let [a (promise)]
+          (condensator/on @ctcp "foo" (fn [foo] 
+                                        (deliver a (:data foo))))
+          (condensator/notify @ctcp "foo" 2)
+          (should= 2 @a))))
