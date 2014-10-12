@@ -80,11 +80,13 @@
                                                     (deliver datapromise (:data data)))
                                                   {:address "localhost" :port 3030})
 
-                (Thread/sleep 1000)
+                ;;TODO get rid of this! Currently needed so that the remote
+                ;;on request has time to complete before the server reactor is notified.
+                (Thread/sleep 500)
+
                 (condensator/notify server "remote" "from-remote")
                 (let [result  (deref datapromise 3000 nil)]
-                  (should= "from-remote" result))))
-          )
+                  (should= "from-remote" result)))))
 
 (describe "With invalid input args"
           (def ctcp (condensator/create "localhost" 3030))
