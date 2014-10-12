@@ -39,7 +39,17 @@
                 (condensator/on @c "foo" (fn [foo]
                                            (deliver a (:data foo))))
                 (condensator/notify @c "foo" 2)
-                (should= 2 @a))))
+                (should= 2 @a)))
+          
+          (it "Sends and receives on local Reactorish object"
+              (let [a (promise)]
+                (condensator/receive-event @c "event" (fn [foo] 
+                                                        (info "hiar")
+                                                        (:data foo)))
+                (condensator/send-event @c "event" "foo" (fn [returned-data]
+                                                           (info "hiar")
+                                                           (deliver a (:data returned-data))))
+                (should= "foo" (deref a 3000 nil)))) )
 
 (describe "Local On and notify tests with TCP"
           (with! ctcp (condensator/create "localhost" 8080))
