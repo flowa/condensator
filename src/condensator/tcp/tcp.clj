@@ -1,6 +1,8 @@
 (ns condensator.tcp.tcp
   (:require [clojurewerkz.meltdown.env :as environment]
             [clojurewerkz.meltdown.consumers :refer :all]
+            [clojurewerkz.meltdown.reactor :as mr]
+            [clojurewerkz.meltdown.selectors :refer  [$]]
             [taoensso.timbre :as timbre])
   (:import [reactor.net.tcp TcpServer]
            [reactor.net.config ServerSocketOptions]
@@ -26,7 +28,9 @@
         codec  (StandardCodecs/LINE_FEED_CODEC)
         server (proxy [TcpServerSpec] [NettyTcpServer])
         str-consumer (from-fn-raw (fn [line]
-                                    (info line)))
+                                    (let [data (read-string line)]
+                                      (info (:key data))
+                                      (mr/notify reactor (:key data) (:data data)))))
         tcp-consumer (from-fn-raw (fn [conn]
                                     (-> conn
                                         (.in)

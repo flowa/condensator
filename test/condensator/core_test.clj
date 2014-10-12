@@ -61,7 +61,9 @@
           (with datapromise (promise))
           (before-all 
             (.await (.start (:server @ctcp)))
-            (condensator/on @ctcp "remote" (fn [data] (deliver @datapromise (:data data)))))
+            (condensator/on @ctcp "remote" (fn [data] 
+                                             (info data)
+                                             (deliver @datapromise "foo"))))
           (after-all (.shutdown (:server @ctcp)))
 
           (it "remote notifies and locally executes listener"
