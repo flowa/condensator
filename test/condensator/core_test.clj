@@ -9,13 +9,13 @@
 (timbre/refer-timbre)
 
 (describe "Create tests"
-          (it "Creates instance of Reactorish object"
+          (it "Creates instance of Reactorish object" 
               (should= (type (condensator/create)) reactor.core.Reactor))
-
+          
           (it "Create TCP capable object when {:address :port} is given"
               (should= condensator.tcp.tcp.TCPCondensator (type (condensator/create "localhost" 8080)))))
 
-(defn get-registry-from-reactor [r]
+(defn get-registry-from-reactor [r] 
   (seq (.getConsumerRegistry r)))
 
 (defn get-registry-entry-by-selector [registry selector]
@@ -36,7 +36,7 @@
 
           (it "Notifies listener and listener acts"
               (let [a (promise)]
-                (condensator/on @c "foo" (fn [foo]
+                (condensator/on @c "foo" (fn [foo] 
                                            (deliver a (:data foo))))
                 (condensator/notify @c "foo" 2)
                 (should= 2 @a)))
@@ -58,20 +58,29 @@
               (condensator/on @ctcp "fookey" (fn [a] "")
                               )
               (assert-registry-listeners (:condensator @ctcp)))
-
+          
           (it "Notifies attached Reactorish object on tcp enabled condensator"
           (let [a (promise)]
-          (condensator/on @ctcp "foo" (fn [foo]
+          (condensator/on @ctcp "foo" (fn [foo] 
                                         (deliver a (:data foo))))
           (condensator/notify @ctcp "foo" 2)
-          (should= 2 @a))))
+                (should= 2 @a)))
+          
+          (it "Sends and receives locally on tcp enabled condensator"
+              (let [a (promise)]
+                (condensator/receive-event @ctcp "event"
+                                           (fn [foo]
+                                             (:data foo)))
+                (condensator/send-event @ctcp "event" "foo" (fn [returned-data]
+                                                        (deliver a (:data returned-data))))
+                (should= "foo" (deref a 3000 nil)))))
 
 (describe "Remote On and notify tests with TCP"
           (def server (condensator/create "localhost" 3030))
           (def local (condensator/create))
-          (before-all
+          (before-all 
             (.await (.start (:server server))))
-          (after-all
+          (after-all 
             (.await (.shutdown (:server server))))
 
           (it "remote notifies and locally executes listener"

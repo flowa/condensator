@@ -41,7 +41,11 @@
            (mr/on (condensator-val condensator) ($ selector) cb)))))
 
 (defn receive-event [condensator selector cb]
-  (mr/receive-event condensator ($ selector) cb))
+  (if (tcp? condensator)
+    (mr/receive-event (:condensator condensator) ($ selector) cb)
+    (mr/receive-event condensator ($ selector) cb)))
 
 (defn send-event [condensator selector data cb]
-  (mr/send-event condensator selector data cb))
+  (if (tcp? condensator)
+    (mr/send-event (:condensator condensator) selector data cb)
+    (mr/send-event condensator selector data cb)))
