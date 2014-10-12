@@ -27,10 +27,6 @@
     (:condensator condensator)
     condensator))
 
-(defn- on-remote
-  [condensator selector cb args]
-  (mr/on condensator ($ selector ) cb))
-
 (defn on
   "Attaches listener to condensator"
   ([condensator selector cb]
