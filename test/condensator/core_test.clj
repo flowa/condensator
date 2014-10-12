@@ -1,6 +1,7 @@
 (ns condensator.core-test
   (:use [speclj.core])
   (:require [condensator.core :as condensator]
+            [condensator.tcp.tcp :as tcp]
             [clojurewerkz.meltdown.selectors :refer  [$]]
             [taoensso.timbre :as timbre]))
 
@@ -40,7 +41,7 @@
                 (condensator/notify @c "foo" 2)
                 (should= 2 @a))))
 
-(describe "On and notify tests with TCP"
+(describe "Local On and notify tests with TCP"
           (with ctcp (condensator/create "localhost" 8080))
 
           (it "Attaches listener to TCP capable Reactorish object"
@@ -54,3 +55,16 @@
                                         (deliver a (:data foo))))
           (condensator/notify @ctcp "foo" 2)
           (should= 2 @a))))
+
+(describe "Remote On and notify tests with TCP"
+          (with ctcp (condensator/create "localhost" 3030))
+          (with datapromise (promise))
+          (before-all 
+            (.await (.start (:server @ctcp)))
+            (condensator/on @ctcp "remote" (fn [data] (deliver @datapromise (:data data)))))
+          (after-all (.shutdown (:server @ctcp)))
+
+          (it "remote notifies and locally executes listener"
+              (tcp/notify-tcp-msg :port 3030 :key "remote" :data "from-remote")
+              (should= "from-remote" (deref @datapromise 3000 nil))))
+
