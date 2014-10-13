@@ -91,13 +91,25 @@
                 (tcp/send-tcp-msg :port 3030, :operation :notify, :selector "remote", :data "from-remote")
                 (let [result  (deref datapromise 3000 nil)]
                   (should= "from-remote" result))))
+          
+          (it "remote sends and receives"
+              (let [datapromise (promise)]
+                (condensator/receive-event server "remote-send-receice" (fn [data]
+                                                                          (:data data)))
+                (tcp/send-receive :port 3030 
+                                  :selector "remote-send-receice" 
+                                  :data "send-receive-remote" 
+                                  :cb (fn [result]
+                                       (info result) 
+                                        (deliver datapromise (:data result))))
+                (should= "send-receive-remote" (deref datapromise 3000 nil))))
 
           (it "remote attaches an on listener to reactor when operation is :on"
               (let [datapromise (promise)]
                 (condensator/on local "remote" (fn [data]
-                                                    (info "datapromise" datapromise)
-                                                    (deliver datapromise (:data data)))
-                                                  {:address "localhost" :port 3030})
+                                                 (info "datapromise" datapromise)
+                                                 (deliver datapromise (:data data)))
+                                {:address "localhost" :port 3030})
 
                 ;;TODO get rid of this! Currently needed so that the remote
                 ;;on request has time to complete before the server reactor is notified.
