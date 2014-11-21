@@ -4,14 +4,14 @@
             [ clojurewerkz.meltdown.consumers :as consumers]
             [condensator.tcp.tcp :as tcp]))
 
-(defn- tcp? [condensator] 
+(defn- tcp? [condensator]
   (if (= condensator.tcp.tcp.TCPCondensator (type condensator))
     true
     false))
 
 (defn create
   "Creates condensator based on meltdown or tcp capable condensator"
-  ([address port] 
+  ([address port]
    (tcp/create-server :address address :port port :reactor (create)))
   ([] (mr/create)))
 
@@ -20,9 +20,18 @@
     (:condensator condensator)
     condensator))
 
-(defn notify [condensator selector payload]
-  "Notifies condensator with payload based on selector"
-    (mr/notify (condensator-val condensator) selector payload))
+(defmulti notify
+  (fn  [x & xs] (if (string? x) :remote :local)))
+
+(defmethod notify :local [condensator selector payload]
+     (mr/notify (condensator-val condensator) selector payload))
+
+(defmethod notify :remote [selector payload {:keys [address port]}]
+  (tcp/send-tcp-msg :port 3030
+                    :address address
+                    :operation :notify
+                    :selector selector
+                    :data payload))
 
 (defn on
   "Attaches listener to condensator"

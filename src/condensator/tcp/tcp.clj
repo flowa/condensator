@@ -39,7 +39,7 @@
                                        (= operation :on) (mr/on reactor ($ selector)
                                                                 (fn [{:keys [data] :as event}]
                                                                   (.send conn (str {:data data}))))
-                                       (= operation :send-receive) (mr/send-event reactor selector data 
+                                       (= operation :send-receive) (mr/send-event reactor selector data
                                                                                   (fn [{:keys [data] :as event}]
                                                                                     (.send conn (str {:data data}))) )))))]
                            (-> conn
@@ -60,11 +60,11 @@
 
 (defn send-tcp-msg
   "Sends condensator tcp request to remote condensator"
-  ([& {:keys [port host selector operation data local-reactor consumer] :as args}]
+  ([& {:keys [port address selector operation data local-reactor consumer] :as args}]
    (info ">> send-tcp-msg args:" args)
    (let [e (environment/create)
          port (or port 3333)
-         host (or host "localhost")
+         address (or address "localhost")
          clientSpec (proxy [TcpClientSpec] [NettyTcpClient])
          str-consumer (or consumer (from-fn-raw (fn [line]
                                      (let [{:keys [data]} (read-string line)]
@@ -74,18 +74,18 @@
                                      (.send conn (str {:selector selector :data data :operation operation}))
                                      (-> conn
                                          (.in)
-                                         (.consume str-consumer)))) 
+                                         (.consume str-consumer))))
          client (-> clientSpec
                     (doto
                       (.env e)
                       (.options (ClientSocketOptions.))
                       (.codec StandardCodecs/LINE_FEED_CODEC)
-                      (.connect host port))
+                      (.connect address port))
                     (.get))]
      (.consume (.open client) tcp-consumer))))
 
-(defn send-receive [& {:keys [port host selector data cb]}]
+(defn send-receive [& {:keys [port address selector data cb]}]
   (let [consumer (from-fn-raw (fn [line]
                                 (let [data (read-string line)]
                                   (cb data))))]
-    (send-tcp-msg :port port :host host :selector selector :operation :send-receive :data data :consumer consumer)))
+    (send-tcp-msg :port port :address address :selector selector :operation :send-receive :data data :consumer consumer)))
