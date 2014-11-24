@@ -1,13 +1,11 @@
 # condensator
 
-A Clojure library designed to make Reactor reactive javascript library to work easily over TCP wire.
+A Clojure library for asynchronous event-driven messaging between nodes in a network.
 
-## Usage
-
-FIXME
+Condensator wraps the [Meltdown](https://github.com/clojurewerkz/meltdown) library and extends it with the functionality for sending messages over TCP.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Flowa
 
 Distributed under the Eclipse Public License, the same as Clojure.
