@@ -27,7 +27,7 @@
      (mr/notify (condensator-val condensator) selector payload))
 
 (defmethod notify :remote [selector payload {:keys [address port]}]
-  (tcp/send-tcp-msg :port 3030
+  (tcp/send-tcp-msg :port port
                     :address address
                     :operation :notify
                     :selector selector
